@@ -62,6 +62,12 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .list li span:last-child{color:var(--muted);font-size:12px}
 .list .none{color:var(--muted);cursor:default}
 .hint{font-size:12.5px;color:var(--muted);margin:0}
+.route{display:grid;grid-template-columns:minmax(0,.85fr) auto minmax(0,1.3fr);gap:8px;align-items:start;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px}
+.route input[type=text]{background:var(--sheet)}
+.route .list{min-width:240px}
+.route .picker[data-key="dest"] .list{left:auto;right:0}
+.list li span:first-child{white-space:nowrap}
+.route .arrow{padding-top:30px;color:var(--muted);font-size:18px;font-weight:700}
 .privacy{font-size:12.5px;color:var(--ok);background:var(--ok-bg);border-radius:7px;padding:8px 10px;margin:0}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:7px;padding:6px 12px;cursor:pointer}
@@ -107,7 +113,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
   <header class="top">
     <div>
       <h1>團體簽證查核</h1>
-      <p class="sub">選這團有哪些國籍、再填行程，一次看出每個國籍去各目的地、轉機點與回台灣需要準備什麼。</p>
+      <p class="sub">選這團有哪些國籍、再填行程，一次看出每個國籍去各目的地、轉機點與回出發地需要準備什麼。</p>
     </div>
     <span class="datechip" id="dataDate">簽證資料版本 2026/02/17</span>
   </header>
@@ -123,11 +129,19 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
         <p class="privacy">只選國籍，不需要姓名、人數或證件號碼。</p>
       </section>
       <section class="step">
-        <div class="step-h"><span class="step-n">2</span><h2>目的地</h2></div>
-        <div class="field">
-          <label for="dest-in">目的地</label>
-          <div class="picker" data-key="dest"><div class="chips"></div><input type="text" id="dest-in" placeholder="輸入國名，例如 英國、France、FR" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
+        <div class="step-h"><span class="step-n">2</span><h2>出發地 → 目的地</h2></div>
+        <div class="route">
+          <div class="field">
+            <label for="origin-in">出發地</label>
+            <div class="picker" data-key="origin" data-max="1"><div class="chips"></div><input type="text" id="origin-in" placeholder="例如 台灣" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
+          </div>
+          <span class="arrow" aria-hidden="true">→</span>
+          <div class="field">
+            <label for="dest-in">目的地</label>
+            <div class="picker" data-key="dest"><div class="chips"></div><input type="text" id="dest-in" placeholder="例如 日本、英國" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
+          </div>
         </div>
+        <p class="hint">出發地用來判斷回程是否需要居留證。</p>
         <div class="field">
           <label for="transit-in">轉機點 <span class="opt">（選填，直飛就留空；以機場內轉機、不出關判斷）</span></label>
           <div class="picker" data-key="transit"><div class="chips"></div><input type="text" id="transit-in" placeholder="例如 阿聯、杜拜請選「阿拉伯聯合大公國」" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
@@ -183,8 +197,8 @@ function feeNote(c){
 }
 const SPECIAL_CN = new Set(['CN','HK','MO']);
 
-const state = {dest:[], transit:[], nat:[], ret:''};
-const SAMPLE = {dest:['GB','FR'], transit:['AE'], nat:['TW','US','MY','IN']};
+const state = {origin:['TW'], dest:[], transit:[], nat:[]};
+const SAMPLE = {origin:['TW'], dest:['GB','FR'], transit:['AE'], nat:['TW','US','MY','IN']};
 let isSample = false;
 
 function raw(p,d){ const r=D.rows[p]; if(!r) return null; const t=r.split(',')[IDX[d]]; return (t===undefined||t==='')?null:t; }
@@ -250,11 +264,17 @@ function transitResult(p,t){
   return {lv:0,label:'機場內轉機免過境簽證',notes,links:[]};
 }
 function fmtDate(s){ return s? s.replace(/-/g,'/') : ''; }
-function returnResult(p){
-  if(p==='TW') return {lv:0,label:'本國護照',notes:[],links:[]};
-  if(SPECIAL_CN.has(p)) return {lv:2,label:'陸港澳人士，請人工確認',notes:['中國大陸、香港、澳門人士來台適用不同的入出境證件規定，不使用外僑居留證流程。'],links:[]};
-  return {lv:1,label:'需核對居留證效期',
-    notes:['須持有效外僑居留證與重入國許可，居留證效期須涵蓋回台當天，請內部對照名單核對。持外僑永久居留證者免重入國許可。','若學生同時具有中華民國國籍，出入台灣請持台灣護照。'],links:[]};
+function returnResult(p,o){
+  if(p===o) return {lv:0,label:'本國護照，不需居留證',notes:[],links:[]};
+  if(o==='TW'){
+    if(SPECIAL_CN.has(p)) return {lv:2,label:'陸港澳人士，請人工確認',notes:['中國大陸、香港、澳門人士來台適用不同的入出境證件規定，不使用外僑居留證流程。'],links:[]};
+    return {lv:1,label:'需核對居留證效期',
+      notes:['須持有效外僑居留證與重入國許可，居留證效期須涵蓋回台當天，請內部對照名單核對。持外僑永久居留證者免重入國許可。','若旅客同時具有中華民國國籍，出入台灣請持台灣護照。'],links:[]};
+  }
+  const e=entry(p,o);
+  const notes=['從'+NAME(o)+'出發、持非'+NAME(o)+'護照的旅客，回程通常須持'+NAME(o)+'有效居留證件或簽證。各國規定不同，此工具未收錄，請人工確認。'];
+  if(e.lv!==2) notes.push('若在'+NAME(o)+'沒有居留身分，入境規定為「'+e.label+'」。');
+  return {lv:2,label:'請人工確認居留身分',notes,links:[]};
 }
 
 const LV = [{c:'ok',t:'免簽／無需辦理'},{c:'warn',t:'需申請或辦理'},{c:'unk',t:'需人工確認'},{c:'bad',t:'需辦簽證'},{c:'bad',t:'不准入境'}];
@@ -267,18 +287,19 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 function render(){
   const sum=document.getElementById('summary'), cards=document.getElementById('cards');
   const tripBits=[];
-  tripBits.push('目的地 <b>'+(state.dest.map(NAME).join('、')||'未選')+'</b>');
+  const O=state.origin[0];
+  tripBits.push('行程 <b>'+(O?NAME(O):'未選出發地')+' → '+(state.dest.map(NAME).join('、')||'未選目的地')+'</b>');
   tripBits.push('轉機 <b>'+(state.transit.map(NAME).join('、')||'無')+'</b>');
-  if(!state.dest.length || !state.nat.length){
+  if(!O || !state.dest.length || !state.nat.length){
     sum.innerHTML='<div class="trip">'+tripBits.join('　·　')+'</div>'+legend();
-    cards.innerHTML='<div class="empty">'+(!state.nat.length?'先在左邊選這團有哪些護照國籍':'再選至少一個目的地')+'，結果會顯示在這裡。</div>';
+    cards.innerHTML='<div class="empty">'+(!state.nat.length?'先在左邊選這團有哪些護照國籍':!O?'再選出發地':'再選至少一個目的地')+'，結果會顯示在這裡。</div>';
     return;
   }
   const items=state.nat.map(p=>{
     const rows=[];
     state.dest.forEach(d=>rows.push({k:'目的地',n:NAME(d),r:destResult(p,d)}));
     state.transit.forEach(t=>rows.push({k:'轉機',n:NAME(t),r:transitResult(p,t)}));
-    rows.push({k:'回台灣',n:'',r:returnResult(p)});
+    rows.push({k:'回'+NAME(O),n:'',r:returnResult(p,O)});
     const worst=Math.max(...rows.map(x=>x.r.lv));
     return {p,rows,worst};
   }).sort((a,b)=>SEV(b.worst)-SEV(a.worst));
@@ -310,7 +331,7 @@ function legend(){
 
 // ---- 國家選擇器 ----
 const ALL = D.order.slice();
-const POOL = {dest: ALL.filter(c=>c!=='TW'), transit: ALL.filter(c=>c!=='TW'), nat: ALL.filter(c=>D.rows[c])};
+const POOL = {origin: ()=>ALL, dest: ()=>ALL.filter(c=>c!==state.origin[0]), transit: ()=>ALL.filter(c=>c!==state.origin[0]), nat: ()=>ALL.filter(c=>D.rows[c])};
 const ALIAS = {AE:'阿聯 杜拜 阿布達比 UAE Dubai',GB:'英國 UK 大英',US:'USA',KR:'南韓',NL:'荷蘭',TR:'Turkey',QA:'杜哈 Doha',HK:'Hong Kong',CZ:'捷克共和國'};
 function matches(c,q){
   q=q.trim().toLowerCase(); if(!q) return true;
@@ -329,7 +350,7 @@ document.querySelectorAll('.picker').forEach(pk=>{
   pk._draw=draw;
   function open(){
     const q=input.value;
-    opts=POOL[key].filter(c=>!state[key].includes(c)&&matches(c,q));
+    opts=POOL[key]().filter(c=>!state[key].includes(c)&&matches(c,q));
     // 精確／開頭符合排前面
     const ql=q.trim().toLowerCase();
     opts.sort((a,b)=>score(b,ql)-score(a,ql));
@@ -339,7 +360,12 @@ document.querySelectorAll('.picker').forEach(pk=>{
   }
   function score(c,q){ if(!q) return 0; const n=D.names[c]; if(n[0]===q||c.toLowerCase()===q) return 3; if(n[0].startsWith(q)||n[1].toLowerCase().startsWith(q)) return 2; return 1; }
   function close(){ list.hidden=true; input.setAttribute('aria-expanded','false'); }
-  function pick(c){ if(!c) return; state[key].push(c); isSample=false; input.value=''; draw(); render(); open(); }
+  const single = pk.dataset.max==='1';
+  function pick(c){
+    if(!c) return; isSample=false; input.value='';
+    if(single){ state[key]=[c]; state.dest=state.dest.filter(x=>x!==c); state.transit=state.transit.filter(x=>x!==c); drawAll(); close(); input.blur(); return; }
+    state[key].push(c); draw(); render(); open();
+  }
   function hl(){ [...list.children].forEach((li,i)=>li.setAttribute('aria-selected',i===active)); const el=list.children[active]; if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'}); }
   input.addEventListener('focus',open);
   input.addEventListener('input',open);
