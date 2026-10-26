@@ -120,7 +120,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
           <label for="nat-in">護照國籍</label>
           <div class="picker" data-key="nat"><div class="chips"></div><input type="text" id="nat-in" placeholder="例如 台灣、美國、馬來西亞" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
         </div>
-        <p class="privacy">只選國籍，不需要姓名、人數或證件號碼。所有查詢都在你的瀏覽器裡完成，不會上傳。</p>
+        <p class="privacy">只選國籍，不需要姓名、人數或證件號碼。</p>
       </section>
       <section class="step">
         <div class="step-h"><span class="step-n">2</span><h2>目的地</h2></div>
@@ -145,6 +145,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
       <footer class="foot">
         <p><b>資料來源：</b>簽證資料取自 Passport Index 公開資料（2026/02/17 版，經 GitHub <a href="https://github.com/imorte/passport-index-data" target="_blank" rel="noopener">imorte/passport-index-data</a> 整理，MIT 授權）。此日期之後的規定變動不會反映在結果中。</p>
         <p><b>回台規定：</b>依《外國人停留居留及永久居留辦法》第 20 條，外國人居留期間出國後再入國須持重入國許可（一般於申辦外僑居留證時一併申請）；持外僑永久居留證者，憑永久居留證及有效護照即可重入國。</p>
+        <p><b>費用：</b>只列出電子旅行授權（ETA、ESTA 等）的參考金額，於 2026/10/26 查證，實際以各國官方申請頁為準。一般簽證與電子簽證費用依國籍與簽證種類不同，請人工確認。</p>
         <p>本工具只做第一輪篩選。標示為黃、紅、灰的項目，請以目的地官方公告、航空公司 Timatic 或外交部領事事務局再確認。</p>
       </footer>
     </section>
@@ -166,6 +167,20 @@ const ETA_LINK = {
   AU:['澳洲內政部簽證查詢','https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-finder'],
   KR:['韓國 K-ETA 官方網站','https://www.k-eta.go.kr/']
 };
+// 電子旅行授權參考費用（2026/10/26 查證）。sure=false 代表未能直接核對官方頁面，畫面會標「請人工確認」
+const FEE_CHECKED = '2026/10/26';
+const FEES = {
+  GB:{t:'約 £20',sure:false,n:'媒體報導 2026/4/8 起由 £16 調漲為 £20，未能直接核對英國政府頁面'},
+  US:{t:'約 US$40',sure:true,n:'2025/9/30 起調漲，之後依通膨每年微調'},
+  CA:{t:'CA$7',sure:true,n:'加拿大政府官網標示'},
+  NZ:{t:'NZ$17（App）或 NZ$23（網站），另加觀光稅 IVL NZ$100',sure:true,n:'紐西蘭移民局 2024/10/1 起費率表；轉機旅客是否需付 IVL 未能確認'},
+  KR:{t:'KRW 10,000，另加稅金',sure:true,n:'韓國 K-ETA 規定'}
+};
+function feeNote(c){
+  const f=FEES[c];
+  if(!f) return '費用依國籍與申請方式不同，請人工確認。';
+  return '參考費用：'+f.t+'（'+f.n+'；'+FEE_CHECKED+' 查證'+(f.sure?'，以官方申請頁為準':'，請人工確認')+'）';
+}
 const SPECIAL_CN = new Set(['CN','HK','MO']);
 
 const state = {dest:[], transit:[], nat:[], ret:''};
@@ -197,9 +212,10 @@ function entry(p,d){
 }
 function destResult(p,d){
   const e=entry(p,d); e.links=[];
-  if(e.lv===1 && raw(p,d)==='T' && ETA_LINK[d]) e.links.push(ETA_LINK[d]);
+  if(e.lv===1 && raw(p,d)==='T'){ e.notes.push(feeNote(d)); if(ETA_LINK[d]) e.links.push(ETA_LINK[d]); }
+  if(raw(p,d)==='E'||raw(p,d)==='R'||raw(p,d)==='A') e.notes.push('簽證費用依國籍與簽證種類不同，請人工確認。');
   if(e.free && SCHENGEN.has(d)) e.notes.push('歐盟 ETIAS 尚未啟用（截至 2026/10 官方未公布啟用日），啟用後免簽旅客須事先線上申請，出發前請再確認。');
-  if(d==='KR' && e.free && p!=='KR'){ e.notes.push('若此國籍不在 K-ETA 暫免名單內，需事先申請 K-ETA；暫免措施原訂至 2026/12/31，2027 年出發請再確認。'); e.links.push(ETA_LINK.KR); }
+  if(d==='KR' && e.free && p!=='KR'){ e.lv=2; e.label=e.label+'，K-ETA 請人工確認'; e.notes.push('若此國籍不在 K-ETA 暫免名單內，需事先申請 K-ETA；暫免措施原訂至 2026/12/31，2027 年出發請再確認。'); e.notes.push(feeNote('KR')); e.links.push(ETA_LINK.KR); }
   return e;
 }
 // 英國 DATV 國籍（gov.uk Transit guidance v9.0，2026/03/25）
@@ -216,7 +232,8 @@ function transitResult(p,t){
   if(NO_AIRSIDE.has(t)){
     if(e.free) return {lv:0,label:'可免簽入境',notes:[NAME(t)+'沒有國際轉機區，轉機也須入境。'],links:[]};
     const r={lv:Math.max(e.lv,1),label:'轉機也須入境：'+e.label,notes:[NAME(t)+'沒有國際轉機區，轉機旅客一律須辦理入境，需準備與入境相同的證件。'],links:[]};
-    if(ETA_LINK[t] && raw(p,t)==='T') r.links.push(ETA_LINK[t]);
+    if(raw(p,t)==='T'){ r.notes.push(feeNote(t)); if(ETA_LINK[t]) r.links.push(ETA_LINK[t]); }
+    else r.notes.push('簽證費用依國籍與簽證種類不同，請人工確認。');
     return r;
   }
   if(t==='GB' && UK_DATV.has(p))
