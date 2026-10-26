@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>團體簽證查核</title>
+<title>旅行簽證查核</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,7 +138,7 @@ html[lang="zh-Hans"]{--font-body:"Noto Sans SC","Noto Sans TC","PingFang SC","Mi
   </div>
   <header class="top">
     <div>
-      <h1 data-i="title">團體簽證查核</h1>
+      <h1 data-i="title">旅行簽證查核</h1>
       <p class="sub" data-i="sub"></p>
     </div>
     <span class="datechip" data-i="dataver"></span>
@@ -206,7 +206,7 @@ try{ const s=localStorage.getItem('visa-lang'); if(['zh','zh-hans','en','ja','es
 
 const I18N = {
 zh:{
-  title:'團體簽證查核',
+  title:'旅行簽證查核',
   sub:'選擇國籍與行程，一次確認目的地、轉機點與回程所需的簽證及證件。',
   dataver:()=>'簽證資料版本 '+DATA_DATE,
   s1:'哪些國籍', natLabel:'護照國籍', natPh:'例如 台灣、美國、馬來西亞',
@@ -261,7 +261,7 @@ zh:{
   retOtherNote2:(o,l)=>'若在'+o+'沒有居留身分，入境規定為「'+l+'」。',
   lv:['免簽／無需辦理','需申請或辦理','需人工確認','需辦簽證','不准入境'],
   route:'行程', noOrigin:'未選出發地', noDest:'未選目的地', transit:'轉機', none:'無', sep:'、',
-  emptyNat:'先在左邊選這團有哪些護照國籍', emptyOrigin:'再選出發地', emptyDest:'再選至少一個目的地', emptyTail:'，結果會顯示在這裡。',
+  emptyNat:'先在左邊選擇旅客的護照國籍', emptyOrigin:'再選出發地', emptyDest:'再選至少一個目的地', emptyTail:'，結果會顯示在這裡。',
   summary:(n,ok,bad)=>'<b>'+n+' 個國籍</b>，其中 '+ok+' 個全部無需辦理'+(bad?'、'+bad+' 個有項目要處理':'')+'。',
   example:'範例資料',
   countPill:(t,n)=>t+' '+n+' 項', headPill:(t,n)=>n+' 項'+t, allOk:'全部無需辦理',
@@ -272,7 +272,7 @@ zh:{
   links:{GB:'英國 ETA 官方申請',US:'美國 ESTA 官方申請',CA:'加拿大 eTA 官方申請',NZ:'紐西蘭 NZeTA 官方說明',AU:'澳洲內政部簽證查詢',KR:'韓國 K-ETA 官方網站'}
 },
 en:{
-  title:'Group Visa Check',
+  title:'Travel Visa Check',
   sub:'Choose nationalities and the route to check the visas and documents needed for each destination, transit stop and the return trip.',
   dataver:()=>'Visa data as of '+DATA_DATE,
   s1:'Nationalities', natLabel:'Passport nationality', natPh:'e.g. Taiwan, United States, Malaysia',
@@ -338,7 +338,7 @@ en:{
   links:{GB:'UK ETA (official)',US:'US ESTA (official)',CA:'Canada eTA (official)',NZ:'New Zealand NZeTA (official)',AU:'Australia visa finder (official)',KR:'Korea K-ETA (official)'}
 },
 'zh-hans':{
-  title:'团体签证查核',
+  title:'旅行签证查核',
   sub:'选择国籍与行程，一次确认目的地、转机点与回程所需的签证及证件。',
   dataver:()=>'签证数据版本 '+DATA_DATE,
   s1:'哪些国籍', natLabel:'护照国籍', natPh:'例如 台湾、美国、马来西亚',
@@ -393,7 +393,7 @@ en:{
   retOtherNote2:(o,l)=>'若在'+o+'没有居留身份，入境规定为「'+l+'」。',
   lv:['免签／无需办理','需申请或办理','需人工确认','需办签证','不准入境'],
   route:'行程', noOrigin:'未选出发地', noDest:'未选目的地', transit:'转机', none:'无', sep:'、',
-  emptyNat:'先在左边选这团有哪些护照国籍', emptyOrigin:'再选出发地', emptyDest:'再选至少一个目的地', emptyTail:'，结果会显示在这里。',
+  emptyNat:'先在左边选择旅客的护照国籍', emptyOrigin:'再选出发地', emptyDest:'再选至少一个目的地', emptyTail:'，结果会显示在这里。',
   summary:(n,ok,bad)=>'<b>'+n+' 个国籍</b>，其中 '+ok+' 个全部无需办理'+(bad?'、'+bad+' 个有项目要处理':'')+'。',
   example:'示例数据',
   countPill:(t,n)=>t+' '+n+' 项', headPill:(t,n)=>n+' 项'+t, allOk:'全部无需办理',
@@ -404,7 +404,7 @@ en:{
   links:{GB:'英国 ETA 官方申请',US:'美国 ESTA 官方申请',CA:'加拿大 eTA 官方申请',NZ:'新西兰 NZeTA 官方说明',AU:'澳大利亚内政部签证查询',KR:'韩国 K-ETA 官方网站'}
 },
 ja:{
-  title:'団体ビザチェック',
+  title:'旅行ビザチェック',
   sub:'国籍と旅程を選ぶと、目的地・乗り継ぎ地・帰路で必要なビザや書類をまとめて確認できます。',
   dataver:()=>'ビザデータ '+DATA_DATE+' 版',
   s1:'国籍', natLabel:'パスポートの国籍', natPh:'例：台湾、アメリカ、マレーシア',
@@ -470,7 +470,7 @@ ja:{
   links:{GB:'英国 ETA（公式）',US:'米国 ESTA（公式）',CA:'カナダ eTA（公式）',NZ:'ニュージーランド NZeTA（公式）',AU:'オーストラリア ビザ検索（公式）',KR:'韓国 K-ETA（公式）'}
 },
 es:{
-  title:'Verificación de visados para grupos',
+  title:'Verificación de visados de viaje',
   sub:'Elija las nacionalidades y la ruta para comprobar los visados y documentos necesarios en cada destino, escala y en el regreso.',
   dataver:()=>'Datos de visados al '+DATA_DATE,
   s1:'Nacionalidades', natLabel:'Nacionalidad del pasaporte', natPh:'p. ej. Taiwán, Estados Unidos, Malasia',
