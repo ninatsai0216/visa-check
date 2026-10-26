@@ -129,7 +129,7 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
           <div class="picker" data-key="dest"><div class="chips"></div><input type="text" id="dest-in" placeholder="輸入國名，例如 英國、France、FR" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
         </div>
         <div class="field">
-          <label for="transit-in">轉機點 <span class="opt">（選填，直飛就留空）</span></label>
+          <label for="transit-in">轉機點 <span class="opt">（選填，直飛就留空；以機場內轉機、不出關判斷）</span></label>
           <div class="picker" data-key="transit"><div class="chips"></div><input type="text" id="transit-in" placeholder="例如 阿聯、杜拜請選「阿拉伯聯合大公國」" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
         </div>
       </section>
@@ -202,14 +202,35 @@ function destResult(p,d){
   if(d==='KR' && e.free && p!=='KR'){ e.notes.push('若此國籍不在 K-ETA 暫免名單內，需事先申請 K-ETA；暫免措施原訂至 2026/12/31，2027 年出發請再確認。'); e.links.push(ETA_LINK.KR); }
   return e;
 }
+// 英國 DATV 國籍（gov.uk Transit guidance v9.0，2026/03/25）
+const UK_DATV = new Set('AF AL DZ AO BD BY MM BI CM CG CD EG ER ET MK GM GH GN GW IN IR IQ CI JM KE XK LB LS LR LY MW MD MN NP NG PK PS CN RW SN RS SL SO ZA SS LK SD SZ SY TZ TR UG VN YE ZW'.split(' '));
+// 申根共同機場過境簽證（ATV）國籍，EU Visa Code Annex IV
+const SCH_ATV = new Set('AF BD CD ER ET GH IR IQ NG PK SO LK'.split(' '));
+// 沒有國際轉機區、轉機也須入境的國家
+const NO_AIRSIDE = new Set(['US','CA']);
+const TRANSIT_RULE='以同一張機票、不出關、不換機場的機場內轉機判斷。';
 function transitResult(p,t){
   const e=entry(p,t);
   if(p===t) return {lv:0,label:'本國公民',notes:[],links:[]};
-  if(e.lv===0 && e.free) return {lv:0,label:'可免簽入境',notes:['可免簽入境者，轉機原則上不需另辦過境簽證。'],links:[]};
-  if(e.lv===4) return {lv:4,label:'不准入境',notes:['請確認是否能在機場管制區內轉機。'],links:[]};
-  const notes=['入境規定為「'+e.label+'」。只在機場管制區內轉機、不出關時，過境規定可能不同，請以 Timatic 確認。'];
-  if(t==='GB') notes.push('英國自 2025/1 起暫時豁免機場管制區內轉機旅客申請 ETA，仍請確認最新規定。');
-  return {lv:2,label:'需確認過境規定',notes,links:[]};
+  const ifExit = e.free ? '' : '若需出關、過夜、換機場或分開購票，則依入境規定：「'+e.label+'」。';
+  if(NO_AIRSIDE.has(t)){
+    if(e.free) return {lv:0,label:'可免簽入境',notes:[NAME(t)+'沒有國際轉機區，轉機也須入境。'],links:[]};
+    const r={lv:Math.max(e.lv,1),label:'轉機也須入境：'+e.label,notes:[NAME(t)+'沒有國際轉機區，轉機旅客一律須辦理入境，需準備與入境相同的證件。'],links:[]};
+    if(ETA_LINK[t] && raw(p,t)==='T') r.links.push(ETA_LINK[t]);
+    return r;
+  }
+  if(t==='GB' && UK_DATV.has(p))
+    return {lv:3,label:'需辦英國機場過境簽證（DATV）',notes:['此國籍在英國機場內轉機也需要 DATV。持有效美、加、澳、紐簽證或歐洲經濟區居留證等可豁免，請個別確認。'],links:[['英國過境簽證官方說明','https://www.gov.uk/transit-visa']]};
+  if(SCHENGEN.has(t) && SCH_ATV.has(p))
+    return {lv:3,label:'需辦申根機場過境簽證（ATV）',notes:['此國籍在所有申根國機場內轉機都需要 ATV。持有效美、加、日簽證或申根居留證等可豁免，請個別確認。'],links:[]};
+  if(SCHENGEN.has(t) && raw(p,t)==='R')
+    return {lv:2,label:'請確認是否需過境簽證',notes:['部分申根國會對需簽證的國籍另外要求機場過境簽證（ATV），各國名單不同，請向'+NAME(t)+'確認。'],links:[]};
+  if(t==='AU'||t==='NZ')
+    return {lv:2,label:'請確認過境規定',notes:[NAME(t)+'對機場內轉機另有規定（如 NZeTA 或過境簽證），請以官方網站或 Timatic 確認。'],links:ETA_LINK[t]?[ETA_LINK[t]]:[]};
+  const notes=[TRANSIT_RULE];
+  if(ifExit) notes.push(ifExit);
+  if(t==='GB') notes.push('英國目前暫時豁免機場內轉機旅客申請 ETA。');
+  return {lv:0,label:'機場內轉機免過境簽證',notes,links:[]};
 }
 function fmtDate(s){ return s? s.replace(/-/g,'/') : ''; }
 function returnResult(p){
