@@ -104,6 +104,13 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .foot p{margin:0}
 .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{max-width:100%}
+@media (max-width:440px){.route{grid-template-columns:minmax(0,1fr)} .route .arrow{padding-top:0;line-height:1;transform:rotate(90deg);justify-self:start;margin-left:10px} .route .picker[data-key="dest"] .list{left:0;right:auto}}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lang button{font:inherit;font-size:13px;border:0;background:var(--sheet);color:var(--muted);padding:4px 11px;cursor:pointer}
+.lang button+button{border-left:1px solid var(--line)}
+.lang button[aria-pressed="true"]{background:var(--navy);color:var(--sheet);font-weight:500}
 </style>
 </head>
 <body>
@@ -112,43 +119,49 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>團體簽證查核</h1>
-      <p class="sub">選這團有哪些國籍、再填行程，一次看出每個國籍去各目的地、轉機點與回出發地需要準備什麼。</p>
+      <h1 data-i="title">團體簽證查核</h1>
+      <p class="sub" data-i="sub"></p>
     </div>
-    <span class="datechip" id="dataDate">簽證資料版本 2026/02/17</span>
+    <div class="tools">
+      <div class="lang" role="group" aria-label="Language / 語言">
+        <button type="button" data-lang="zh" aria-pressed="true">中文</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <span class="datechip" data-i="dataver"></span>
+    </div>
   </header>
 
   <div class="grid">
     <form class="panel" id="form" autocomplete="off">
       <section class="step">
-        <div class="step-h"><span class="step-n">1</span><h2>哪些國籍</h2></div>
+        <div class="step-h"><span class="step-n">1</span><h2 data-i="s1"></h2></div>
         <div class="field">
-          <label for="nat-in">護照國籍</label>
-          <div class="picker" data-key="nat"><div class="chips"></div><input type="text" id="nat-in" placeholder="例如 台灣、美國、馬來西亞" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
+          <label for="nat-in" data-i="natLabel"></label>
+          <div class="picker" data-key="nat"><div class="chips"></div><input type="text" id="nat-in" data-ph="natPh" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
         </div>
-        <p class="privacy">只選國籍，不需要姓名、人數或證件號碼。</p>
+        <p class="privacy" data-i="privacy"></p>
       </section>
       <section class="step">
-        <div class="step-h"><span class="step-n">2</span><h2>出發地 → 目的地</h2></div>
+        <div class="step-h"><span class="step-n">2</span><h2 data-i="s2"></h2></div>
         <div class="route">
           <div class="field">
-            <label for="origin-in">出發地</label>
-            <div class="picker" data-key="origin" data-max="1"><div class="chips"></div><input type="text" id="origin-in" placeholder="例如 台灣" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
+            <label for="origin-in" data-i="origin"></label>
+            <div class="picker" data-key="origin" data-max="1"><div class="chips"></div><input type="text" id="origin-in" data-ph="originPh" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
           </div>
           <span class="arrow" aria-hidden="true">→</span>
           <div class="field">
-            <label for="dest-in">目的地</label>
-            <div class="picker" data-key="dest"><div class="chips"></div><input type="text" id="dest-in" placeholder="例如 日本、英國" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
+            <label for="dest-in" data-i="dest"></label>
+            <div class="picker" data-key="dest"><div class="chips"></div><input type="text" id="dest-in" data-ph="destPh" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
           </div>
         </div>
         <div class="field">
-          <label for="transit-in">轉機點 <span class="opt">（選填，直飛就留空；以機場內轉機、不出關判斷）</span></label>
-          <div class="picker" data-key="transit"><div class="chips"></div><input type="text" id="transit-in" placeholder="例如 阿聯、杜拜請選「阿拉伯聯合大公國」" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
+          <label for="transit-in"><span data-i="transitLabel"></span> <span class="opt" data-i="transitOpt"></span></label>
+          <div class="picker" data-key="transit"><div class="chips"></div><input type="text" id="transit-in" data-ph="transitPh" role="combobox" aria-expanded="false" aria-autocomplete="list"></div>
         </div>
       </section>
       <div class="actions">
-        <button type="button" class="btn" id="clear">全部清除</button>
-        <button type="button" class="btn" id="sample">載入範例</button>
+        <button type="button" class="btn" id="clear" data-i="clear"></button>
+        <button type="button" class="btn" id="sample" data-i="sample"></button>
       </div>
     </form>
 
@@ -156,10 +169,10 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
       <div class="summary" id="summary"></div>
       <div id="cards" class="cards"></div>
       <footer class="foot">
-        <p><b>資料來源：</b>簽證資料取自 Passport Index 公開資料（2026/02/17 版，經 GitHub <a href="https://github.com/imorte/passport-index-data" target="_blank" rel="noopener">imorte/passport-index-data</a> 整理，MIT 授權）。此日期之後的規定變動不會反映在結果中。</p>
-        <p><b>回台規定：</b>依《外國人停留居留及永久居留辦法》第 20 條，外國人居留期間出國後再入國須持重入國許可（一般於申辦外僑居留證時一併申請）；持外僑永久居留證者，憑永久居留證及有效護照即可重入國。</p>
-        <p><b>費用：</b>電子旅行授權（ETA、ESTA 等）金額於 2026/10/26 核對各國官網；標示「請人工查證」者未能核對。簽證費用請人工查證。所附申請連結皆為各國政府官方網站，請勿使用代辦或仿冒網站。</p>
-        <p>本工具只做第一輪篩選。標示為黃、紅、灰的項目，請以目的地官方公告、航空公司 Timatic 或外交部領事事務局再確認。</p>
+        <p data-i="foot1"></p>
+        <p data-i="foot2"></p>
+        <p data-i="foot3"></p>
+        <p data-i="foot4"></p>
       </footer>
     </section>
   </div>
@@ -170,26 +183,173 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 (function(){
 const D = JSON.parse(document.getElementById('visa-data').textContent);
 const IDX = {}; D.order.forEach((c,i)=>IDX[c]=i);
-const NAME = c => (D.names[c]||[c])[0];
-const SCHENGEN = new Set('AT BE BG CH CZ DE DK EE ES FI FR GR HR HU IS IT LI LT LU LV MT NL NO PL PT RO SE SI SK CY'.split(' '));
-const ETA_LINK = {
-  GB:['英國 ETA 官方申請','https://www.gov.uk/eta'],
-  US:['美國 ESTA 官方申請','https://esta.cbp.dhs.gov/'],
-  CA:['加拿大 eTA 官方申請','https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/eta.html'],
-  NZ:['紐西蘭 NZeTA 官方說明','https://www.immigration.govt.nz/visas/new-zealand-electronic-travel-authority-nzeta/'],
-  AU:['澳洲內政部簽證查詢','https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-finder'],
-  KR:['韓國 K-ETA 官方網站','https://www.k-eta.go.kr/']
-};
-// 電子旅行授權費用：2026/10/26 逐一核對各國官網。未能核對的金額寫「請人工查證」
+// 資料日期與費用查證日期：每月更新時只改這兩個常數
+const DATA_DATE = '2026/02/17';
 const FEE_CHECKED = '2026/10/26';
-const FEES = {
-  GB:'£20（官網，'+FEE_CHECKED+' 查證）',
-  US:'US$40.62（官網，'+FEE_CHECKED+' 查證）',
-  CA:'CA$7（官網，'+FEE_CHECKED+' 查證）',
-  NZ:'NZ$17 起（官網，'+FEE_CHECKED+' 查證）；另加觀光稅 IVL 約 NZ$100（請人工查證）',
-  KR:'KRW 10,000（官網，'+FEE_CHECKED+' 查證）'
+
+let L = 'zh';
+try{ const s=localStorage.getItem('visa-lang'); if(s==='en'||s==='zh') L=s; }catch(e){}
+if(location.hash==='#en') L='en'; else if(location.hash==='#zh') L='zh';
+
+const I18N = {
+zh:{
+  title:'團體簽證查核',
+  sub:'選擇國籍與行程，一次確認目的地、轉機點與回程所需的簽證及證件。',
+  dataver:()=>'簽證資料版本 '+DATA_DATE,
+  s1:'哪些國籍', natLabel:'護照國籍', natPh:'例如 台灣、美國、馬來西亞',
+  privacy:'只選國籍，不需要姓名、人數或證件號碼。',
+  s2:'出發地 → 目的地', origin:'出發地', originPh:'例如 台灣', dest:'目的地', destPh:'例如 日本、英國',
+  transitLabel:'轉機點', transitOpt:'（選填，直飛就留空；以機場內轉機、不出關判斷）', transitPh:'例如 阿聯、杜拜請選「阿拉伯聯合大公國」',
+  clear:'全部清除', sample:'載入範例',
+  foot1:()=>'<b>資料來源：</b>簽證資料取自 Passport Index 公開資料（'+DATA_DATE+' 版，經 GitHub <a href="https://github.com/imorte/passport-index-data" target="_blank" rel="noopener">imorte/passport-index-data</a> 整理，MIT 授權）。此日期之後的規定變動不會反映在結果中。',
+  foot2:'<b>回台規定：</b>依《外國人停留居留及永久居留辦法》第 20 條，外國人居留期間出國後再入國須持重入國許可（一般於申辦外僑居留證時一併申請）；持外僑永久居留證者，憑永久居留證及有效護照即可重入國。',
+  foot3:()=>'<b>費用：</b>電子旅行授權（ETA、ESTA 等）金額於 '+FEE_CHECKED+' 核對各國官網；標示「請人工查證」者未能核對。簽證費用請人工查證。所附申請連結皆為各國政府官方網站，請勿使用代辦或仿冒網站。',
+  foot4:'本工具只做第一輪篩選。標示為黃、紅、灰的項目，請以目的地官方公告、航空公司 Timatic 或外交部領事事務局再確認。',
+  citizen:'本國公民',
+  twCN:'台灣居民須持「台胞證」入境中國大陸，不使用護照。',
+  twHK:'台灣居民赴香港適用網上預辦入境登記或台胞證等特殊規定。',
+  twMO:'台灣居民赴澳門適用特殊入境規定。',
+  special:'特殊規定，請人工確認', nodata:'查無資料，請人工確認',
+  freeDays:n=>'免簽 '+n+' 天', free:'免簽',
+  voa:'落地簽（抵達時辦理）', voaNote:'需於入境時辦理並可能收費，請確認所需文件。',
+  eta:'需事先申請電子旅行授權（ETA）', evisa:'需事先申請電子簽證',
+  visa:'需辦理簽證', visaNote:'需於出發前送件申請，請預留辦理時間。', ban:'不准入境',
+  feeRef:x=>'參考費用：'+x, feeManual:'費用請人工查證。', visaFee:'簽證費用請人工查證。',
+  checked:'（官網，'+FEE_CHECKED+' 查證）', verify:'（請人工查證）',
+  nzFee:a=>'NZ$17 起'+a.checked+'；另加觀光稅 IVL 約 NZ$100'+a.verify,
+  etias:'歐盟 ETIAS 尚未啟用（截至 2026/10 官方未公布啟用日），啟用後免簽旅客須事先線上申請，出發前請再確認。',
+  krLabel:l=>l+'，K-ETA 請人工確認',
+  krNote:'若此國籍不在 K-ETA 暫免名單內，需事先申請 K-ETA；官方公告暫免措施至 2026/12/31，2027 年出發請再確認。',
+  transitRule:'以同一張機票、不出關、不換機場的機場內轉機判斷。',
+  ifExit:l=>'若需出關、過夜、換機場或分開購票，則依入境規定：「'+l+'」。',
+  canEnterFree:'可免簽入境',
+  noAirsideFree:n=>n+'沒有國際轉機區，轉機也須入境。',
+  mustEnter:l=>'轉機也須入境：'+l,
+  noAirsideNote:n=>n+'沒有國際轉機區，轉機旅客一律須辦理入境，需準備與入境相同的證件。',
+  datv:'需辦英國機場過境簽證（DATV）',
+  datvNote:'此國籍在英國機場內轉機也需要 DATV。持有效美、加、澳、紐簽證或歐洲經濟區居留證等可豁免，請個別確認。',
+  datvLink:'英國過境簽證官方說明',
+  atv:'需辦申根機場過境簽證（ATV）',
+  atvNote:'此國籍在所有申根國機場內轉機都需要 ATV。持有效美、加、日簽證或申根居留證等可豁免，請個別確認。',
+  atvCheck:'請確認是否需過境簽證',
+  atvCheckNote:n=>'部分申根國會對需簽證的國籍另外要求機場過境簽證（ATV），各國名單不同，請向'+n+'確認。',
+  auNz:'請確認過境規定',
+  auNzNote:n=>n+'對機場內轉機另有規定（如 NZeTA 或過境簽證），請以官方網站或 Timatic 確認。',
+  airsideOk:'機場內轉機免過境簽證',
+  gbAirside:'英國官網：不通過英國海關的機場內轉機不需 ETA。',
+  retOwn:'本國護照，不需居留證',
+  retCN:'陸港澳人士，請人工確認',
+  retCNNote:'中國大陸、香港、澳門人士來台適用不同的入出境證件規定，不使用外僑居留證流程。',
+  retARC:'需核對居留證效期',
+  retARCNote:'須持有效外僑居留證與重入國許可，居留證效期須涵蓋回台當天，請內部對照名單核對。持外僑永久居留證者免重入國許可。',
+  retDual:'若旅客同時具有中華民國國籍，出入台灣請持台灣護照。',
+  retOther:'請人工確認居留身分',
+  retOtherNote:o=>'從'+o+'出發、持非'+o+'護照的旅客，回程通常須持'+o+'有效居留證件或簽證。各國規定不同，此工具未收錄，請人工確認。',
+  retOtherNote2:(o,l)=>'若在'+o+'沒有居留身分，入境規定為「'+l+'」。',
+  lv:['免簽／無需辦理','需申請或辦理','需人工確認','需辦簽證','不准入境'],
+  route:'行程', noOrigin:'未選出發地', noDest:'未選目的地', transit:'轉機', none:'無', sep:'、',
+  emptyNat:'先在左邊選這團有哪些護照國籍', emptyOrigin:'再選出發地', emptyDest:'再選至少一個目的地', emptyTail:'，結果會顯示在這裡。',
+  summary:(n,ok,bad)=>'<b>'+n+' 個國籍</b>，其中 '+ok+' 個全部無需辦理'+(bad?'、'+bad+' 個有項目要處理':'')+'。',
+  example:'範例資料',
+  countPill:(t,n)=>t+' '+n+' 項', headPill:(t,n)=>n+' 項'+t, allOk:'全部無需辦理',
+  rowDest:'目的地', rowTransit:'轉機', rowReturn:o=>'回'+o,
+  cardFoot:'外籍護照建議再以 Timatic 或目的地官方網站確認。',
+  lg:['免簽／無需辦理','需事先申請、落地辦理或核對證件','需辦簽證','資料缺漏或特殊規定，請人工確認'],
+  noMatch:'找不到符合的國家', remove:'移除 ',
+  links:{GB:'英國 ETA 官方申請',US:'美國 ESTA 官方申請',CA:'加拿大 eTA 官方申請',NZ:'紐西蘭 NZeTA 官方說明',AU:'澳洲內政部簽證查詢',KR:'韓國 K-ETA 官方網站'}
+},
+en:{
+  title:'Group Visa Check',
+  sub:'Choose nationalities and the route to check the visas and documents needed for each destination, transit stop and the return trip.',
+  dataver:()=>'Visa data as of '+DATA_DATE,
+  s1:'Nationalities', natLabel:'Passport nationality', natPh:'e.g. Taiwan, United States, Malaysia',
+  privacy:'Nationalities only. No names, headcount or passport numbers needed.',
+  s2:'Departure → Destination', origin:'Departure', originPh:'e.g. Taiwan', dest:'Destination', destPh:'e.g. Japan, United Kingdom',
+  transitLabel:'Transit', transitOpt:'(optional; leave blank for direct flights; assumes airside transit without passing immigration)', transitPh:'e.g. United Arab Emirates for Dubai',
+  clear:'Clear all', sample:'Load example',
+  foot1:()=>'<b>Source:</b> Visa data from Passport Index public data ('+DATA_DATE+' edition, compiled on GitHub at <a href="https://github.com/imorte/passport-index-data" target="_blank" rel="noopener">imorte/passport-index-data</a>, MIT licence). Rule changes after this date are not reflected.',
+  foot2:'<b>Returning to Taiwan:</b> Under Article 20 of the Regulations Governing Visiting, Residency, and Permanent Residency of Foreign Nationals, foreign residents who leave Taiwan need a re-entry permit to return (usually issued together with the Alien Resident Certificate). APRC holders can re-enter with the APRC and a valid passport.',
+  foot3:()=>'<b>Fees:</b> Fees for electronic travel authorisations (ETA, ESTA, etc.) were checked against official government websites on '+FEE_CHECKED+'. Items marked “please verify manually” could not be confirmed. Visa fees: please verify manually. All application links go to official government websites; do not use agents or look-alike sites.',
+  foot4:'This tool is a first-pass screen only. For items marked yellow, red or grey, confirm with the destination’s official notices, the airline’s Timatic, or Taiwan’s Bureau of Consular Affairs.',
+  citizen:'Citizen',
+  twCN:'Taiwan residents enter mainland China with a Mainland Travel Permit for Taiwan Residents, not a passport.',
+  twHK:'Taiwan residents visiting Hong Kong follow special rules such as online pre-arrival registration or the Mainland Travel Permit.',
+  twMO:'Taiwan residents visiting Macao follow special entry rules.',
+  special:'Special rules – verify manually', nodata:'No data – verify manually',
+  freeDays:n=>'Visa-free, '+n+' days', free:'Visa-free',
+  voa:'Visa on arrival', voaNote:'Issued on arrival and may be charged; check the required documents.',
+  eta:'Electronic travel authorisation (ETA) required in advance', evisa:'e-Visa required in advance',
+  visa:'Visa required', visaNote:'Apply before departure and allow time for processing.', ban:'Entry not permitted',
+  feeRef:x=>'Reference fee: '+x, feeManual:'Fee: please verify manually.', visaFee:'Visa fee: please verify manually.',
+  checked:' (official site, checked '+FEE_CHECKED+')', verify:' (please verify manually)',
+  nzFee:a=>'from NZ$17'+a.checked+'; plus IVL tourist levy approx. NZ$100'+a.verify,
+  etias:'EU ETIAS is not yet in operation (no official start date as of 2026/10). Once launched, visa-free travellers must apply online in advance; check again before departure.',
+  krLabel:l=>l+' – verify K-ETA manually',
+  krNote:'If this nationality is not on the K-ETA temporary exemption list, a K-ETA is required. The exemption officially runs until 2026/12/31; for travel in 2027, check again.',
+  transitRule:'Assumes airside transit on one ticket, without passing immigration or changing airports.',
+  ifExit:l=>'If you need to pass immigration, stay overnight, change airports or travel on separate tickets, the entry rule applies: “'+l+'”.',
+  canEnterFree:'Visa-free entry',
+  noAirsideFree:n=>n+' has no international transit area; transit passengers must enter the country.',
+  mustEnter:l=>'Must enter even in transit: '+l,
+  noAirsideNote:n=>n+' has no international transit area. All transit passengers must clear immigration and need the same documents as for entry.',
+  datv:'UK Direct Airside Transit Visa (DATV) required',
+  datvNote:'This nationality needs a DATV even for airside transit in the UK. Holders of valid US, Canadian, Australian or New Zealand visas or EEA residence permits may be exempt; check case by case.',
+  datvLink:'UK transit visa (official)',
+  atv:'Schengen Airport Transit Visa (ATV) required',
+  atvNote:'This nationality needs an ATV at every Schengen airport. Holders of valid US, Canadian or Japanese visas or Schengen residence permits may be exempt; check case by case.',
+  atvCheck:'Check whether a transit visa is needed',
+  atvCheckNote:n=>'Some Schengen countries require an ATV for additional visa-required nationalities, and their lists differ. Check with '+n+'.',
+  auNz:'Check transit rules',
+  auNzNote:n=>n+' has its own rules for airside transit (such as an NZeTA or a transit visa). Check the official website or Timatic.',
+  airsideOk:'No transit visa needed for airside transit',
+  gbAirside:'Per GOV.UK: no ETA is needed for airside transit that does not pass UK border control.',
+  retOwn:'Own passport, no residence permit needed',
+  retCN:'Mainland China / Hong Kong / Macao – verify manually',
+  retCNNote:'Residents of mainland China, Hong Kong and Macao use different travel documents for Taiwan, not the ARC process.',
+  retARC:'Check ARC validity',
+  retARCNote:'A valid Alien Resident Certificate (ARC) and re-entry permit are required, and the ARC must still be valid on the day of return to Taiwan. Check against the internal roster. APRC holders do not need a re-entry permit.',
+  retDual:'Travellers who also hold ROC (Taiwan) nationality should leave and enter Taiwan on their Taiwan passport.',
+  retOther:'Verify residence status manually',
+  retOtherNote:o=>'Travellers departing from '+o+' on a non-'+o+' passport usually need a valid '+o+' residence permit or visa to return. Rules vary and are not covered by this tool; verify manually.',
+  retOtherNote2:(o,l)=>'If the traveller has no residence status in '+o+', the entry rule is: “'+l+'”.',
+  lv:['Visa-free / nothing needed','Apply or arrange','Verify manually','Visa required','Entry not permitted'],
+  route:'Route', noOrigin:'No departure', noDest:'No destination', transit:'Transit', none:'None', sep:', ',
+  emptyNat:'Start by choosing the passport nationalities on the left', emptyOrigin:'Next, choose the departure country', emptyDest:'Next, choose at least one destination', emptyTail:'. Results will appear here.',
+  summary:(n,ok,bad)=>'<b>'+n+' nationalit'+(n===1?'y':'ies')+'</b>: '+ok+' need nothing'+(bad?', '+bad+' have items to handle':'')+'.',
+  example:'Example',
+  countPill:(t,n)=>t+': '+n, headPill:(t,n)=>t+' ('+n+')', allOk:'Nothing needed',
+  rowDest:'Destination', rowTransit:'Transit', rowReturn:o=>'Return to '+o,
+  cardFoot:'For non-Taiwan passports, also confirm with Timatic or the destination’s official website.',
+  lg:['Visa-free or nothing needed','Apply in advance, on arrival, or check documents','Visa required','Missing data or special rules – verify manually'],
+  noMatch:'No matching country', remove:'Remove ',
+  links:{GB:'UK ETA (official)',US:'US ESTA (official)',CA:'Canada eTA (official)',NZ:'New Zealand NZeTA (official)',AU:'Australia visa finder (official)',KR:'Korea K-ETA (official)'}
+}};
+function T(k,...a){ const v=I18N[L][k]; return typeof v==='function'? v(...a) : v; }
+const NAME = c => { const n=D.names[c]||[c,c]; return L==='en'? n[1] : n[0]; };
+
+const SCHENGEN = new Set('AT BE BG CH CZ DE DK EE ES FI FR GR HR HU IS IT LI LT LU LV MT NL NO PL PT RO SE SI SK CY'.split(' '));
+const LINK_URL = {
+  GB:'https://www.gov.uk/eta',
+  US:'https://esta.cbp.dhs.gov/',
+  CA:'https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada/eta.html',
+  NZ:'https://www.immigration.govt.nz/visas/new-zealand-electronic-travel-authority-nzeta/',
+  AU:'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-finder',
+  KR:'https://www.k-eta.go.kr/'
 };
-function feeNote(c){ return FEES[c] ? '參考費用：'+FEES[c] : '費用請人工查證。'; }
+const LINK = c => LINK_URL[c] ? [T('links')[c], LINK_URL[c]] : null;
+// 電子旅行授權費用：逐一核對各國官網（FEE_CHECKED）。未能核對的金額標「請人工查證」
+function feeText(c){
+  const a={checked:T('checked'), verify:T('verify')};
+  switch(c){
+    case 'GB': return '£20'+a.checked;
+    case 'US': return 'US$40.62'+a.checked;
+    case 'CA': return 'CA$7'+a.checked;
+    case 'NZ': return T('nzFee',a);
+    case 'KR': return 'KRW 10,000'+a.checked;
+  }
+  return null;
+}
+function feeNote(c){ const f=feeText(c); return f ? T('feeRef',f) : T('feeManual'); }
 const SPECIAL_CN = new Set(['CN','HK','MO']);
 
 const state = {origin:['TW'], dest:[], transit:[], nat:[]};
@@ -200,31 +360,29 @@ function raw(p,d){ const r=D.rows[p]; if(!r) return null; const t=r.split(',')[I
 
 // level: 0 ok, 1 warn(需申請/落地), 2 unk(人工確認), 3 bad(需簽證), 4 ban
 function entry(p,d){
-  if(p===d) return {lv:0,label:'本國公民',notes:[]};
-  if(p==='TW' && SPECIAL_CN.has(d)){
-    const m={CN:'台灣居民須持「台胞證」入境中國大陸，不使用護照。',HK:'台灣居民赴香港適用網上預辦入境登記或台胞證等特殊規定。',MO:'台灣居民赴澳門適用特殊入境規定。'};
-    return {lv:2,label:'特殊規定，請人工確認',notes:[m[d]]};
-  }
+  if(p===d) return {lv:0,label:T('citizen'),notes:[]};
+  if(p==='TW' && SPECIAL_CN.has(d)) return {lv:2,label:T('special'),notes:[T('tw'+d)]};
   const t=raw(p,d);
-  if(t===null) return {lv:2,label:'查無資料，請人工確認',notes:[]};
-  if(/^\d+$/.test(t)) return {lv:0,label:'免簽 '+t+' 天',free:true,notes:[]};
+  if(t===null) return {lv:2,label:T('nodata'),notes:[]};
+  if(/^\d+$/.test(t)) return {lv:0,label:T('freeDays',t),free:true,notes:[]};
   switch(t){
-    case 'F': return {lv:0,label:'免簽',free:true,notes:[]};
-    case 'A': return {lv:1,label:'落地簽（抵達時辦理）',notes:['需於入境時辦理並可能收費，請確認所需文件。']};
-    case 'T': return {lv:1,label:'需事先申請電子旅行授權（ETA）',notes:[]};
-    case 'E': return {lv:1,label:'需事先申請電子簽證',notes:[]};
-    case 'R': return {lv:3,label:'需辦理簽證',notes:['需於出發前送件申請，請預留辦理時間。']};
-    case 'N': return {lv:4,label:'不准入境',notes:[]};
-    case 'S': return {lv:0,label:'本國公民',notes:[]};
+    case 'F': return {lv:0,label:T('free'),free:true,notes:[]};
+    case 'A': return {lv:1,label:T('voa'),notes:[T('voaNote')]};
+    case 'T': return {lv:1,label:T('eta'),notes:[]};
+    case 'E': return {lv:1,label:T('evisa'),notes:[]};
+    case 'R': return {lv:3,label:T('visa'),notes:[T('visaNote')]};
+    case 'N': return {lv:4,label:T('ban'),notes:[]};
+    case 'S': return {lv:0,label:T('citizen'),notes:[]};
   }
-  return {lv:2,label:'查無資料，請人工確認',notes:[]};
+  return {lv:2,label:T('nodata'),notes:[]};
 }
 function destResult(p,d){
   const e=entry(p,d); e.links=[];
-  if(e.lv===1 && raw(p,d)==='T'){ e.notes.push(feeNote(d)); if(ETA_LINK[d]) e.links.push(ETA_LINK[d]); }
-  if(raw(p,d)==='E'||raw(p,d)==='R'||raw(p,d)==='A') e.notes.push('簽證費用請人工查證。');
-  if(e.free && SCHENGEN.has(d)) e.notes.push('歐盟 ETIAS 尚未啟用（截至 2026/10 官方未公布啟用日），啟用後免簽旅客須事先線上申請，出發前請再確認。');
-  if(d==='KR' && e.free && p!=='KR'){ e.lv=2; e.label=e.label+'，K-ETA 請人工確認'; e.notes.push('若此國籍不在 K-ETA 暫免名單內，需事先申請 K-ETA；暫免措施原訂至 2026/12/31，2027 年出發請再確認。'); e.notes.push(feeNote('KR')); e.links.push(ETA_LINK.KR); }
+  const r=raw(p,d);
+  if(e.lv===1 && r==='T'){ e.notes.push(feeNote(d)); if(LINK(d)) e.links.push(LINK(d)); }
+  if(r==='E'||r==='R'||r==='A') e.notes.push(T('visaFee'));
+  if(e.free && SCHENGEN.has(d)) e.notes.push(T('etias'));
+  if(d==='KR' && e.free && p!=='KR'){ e.lv=2; e.label=T('krLabel',e.label); e.notes.push(T('krNote')); e.notes.push(feeNote('KR')); e.links.push(LINK('KR')); }
   return e;
 }
 // 英國 DATV 國籍（gov.uk Transit guidance v9.0，2026/03/25）
@@ -233,127 +391,125 @@ const UK_DATV = new Set('AF AL DZ AO BD BY MM BI CM CG CD EG ER ET MK GM GH GN G
 const SCH_ATV = new Set('AF BD CD ER ET GH IR IQ NG PK SO LK'.split(' '));
 // 沒有國際轉機區、轉機也須入境的國家
 const NO_AIRSIDE = new Set(['US','CA']);
-const TRANSIT_RULE='以同一張機票、不出關、不換機場的機場內轉機判斷。';
 function transitResult(p,t){
   const e=entry(p,t);
-  if(p===t) return {lv:0,label:'本國公民',notes:[],links:[]};
-  const ifExit = e.free ? '' : '若需出關、過夜、換機場或分開購票，則依入境規定：「'+e.label+'」。';
+  if(p===t) return {lv:0,label:T('citizen'),notes:[],links:[]};
   if(NO_AIRSIDE.has(t)){
-    if(e.free) return {lv:0,label:'可免簽入境',notes:[NAME(t)+'沒有國際轉機區，轉機也須入境。'],links:[]};
-    const r={lv:Math.max(e.lv,1),label:'轉機也須入境：'+e.label,notes:[NAME(t)+'沒有國際轉機區，轉機旅客一律須辦理入境，需準備與入境相同的證件。'],links:[]};
-    if(raw(p,t)==='T'){ r.notes.push(feeNote(t)); if(ETA_LINK[t]) r.links.push(ETA_LINK[t]); }
-    else r.notes.push('簽證費用請人工查證。');
+    if(e.free) return {lv:0,label:T('canEnterFree'),notes:[T('noAirsideFree',NAME(t))],links:[]};
+    const r={lv:Math.max(e.lv,1),label:T('mustEnter',e.label),notes:[T('noAirsideNote',NAME(t))],links:[]};
+    if(raw(p,t)==='T'){ r.notes.push(feeNote(t)); if(LINK(t)) r.links.push(LINK(t)); }
+    else r.notes.push(T('visaFee'));
     return r;
   }
   if(t==='GB' && UK_DATV.has(p))
-    return {lv:3,label:'需辦英國機場過境簽證（DATV）',notes:['此國籍在英國機場內轉機也需要 DATV。持有效美、加、澳、紐簽證或歐洲經濟區居留證等可豁免，請個別確認。'],links:[['英國過境簽證官方說明','https://www.gov.uk/transit-visa']]};
+    return {lv:3,label:T('datv'),notes:[T('datvNote')],links:[[T('datvLink'),'https://www.gov.uk/transit-visa']]};
   if(SCHENGEN.has(t) && SCH_ATV.has(p))
-    return {lv:3,label:'需辦申根機場過境簽證（ATV）',notes:['此國籍在所有申根國機場內轉機都需要 ATV。持有效美、加、日簽證或申根居留證等可豁免，請個別確認。'],links:[]};
+    return {lv:3,label:T('atv'),notes:[T('atvNote')],links:[]};
   if(SCHENGEN.has(t) && raw(p,t)==='R')
-    return {lv:2,label:'請確認是否需過境簽證',notes:['部分申根國會對需簽證的國籍另外要求機場過境簽證（ATV），各國名單不同，請向'+NAME(t)+'確認。'],links:[]};
+    return {lv:2,label:T('atvCheck'),notes:[T('atvCheckNote',NAME(t))],links:[]};
   if(t==='AU'||t==='NZ')
-    return {lv:2,label:'請確認過境規定',notes:[NAME(t)+'對機場內轉機另有規定（如 NZeTA 或過境簽證），請以官方網站或 Timatic 確認。'],links:ETA_LINK[t]?[ETA_LINK[t]]:[]};
-  const notes=[TRANSIT_RULE];
-  if(ifExit) notes.push(ifExit);
-  if(t==='GB') notes.push('英國官網：不通過英國海關的機場內轉機不需 ETA。');
-  return {lv:0,label:'機場內轉機免過境簽證',notes,links:[]};
+    return {lv:2,label:T('auNz'),notes:[T('auNzNote',NAME(t))],links:LINK(t)?[LINK(t)]:[]};
+  const notes=[T('transitRule')];
+  if(!e.free) notes.push(T('ifExit',e.label));
+  if(t==='GB') notes.push(T('gbAirside'));
+  return {lv:0,label:T('airsideOk'),notes,links:[]};
 }
-function fmtDate(s){ return s? s.replace(/-/g,'/') : ''; }
 function returnResult(p,o){
-  if(p===o) return {lv:0,label:'本國護照，不需居留證',notes:[],links:[]};
+  if(p===o) return {lv:0,label:T('retOwn'),notes:[],links:[]};
   if(o==='TW'){
-    if(SPECIAL_CN.has(p)) return {lv:2,label:'陸港澳人士，請人工確認',notes:['中國大陸、香港、澳門人士來台適用不同的入出境證件規定，不使用外僑居留證流程。'],links:[]};
-    return {lv:1,label:'需核對居留證效期',
-      notes:['須持有效外僑居留證與重入國許可，居留證效期須涵蓋回台當天，請內部對照名單核對。持外僑永久居留證者免重入國許可。','若旅客同時具有中華民國國籍，出入台灣請持台灣護照。'],links:[]};
+    if(SPECIAL_CN.has(p)) return {lv:2,label:T('retCN'),notes:[T('retCNNote')],links:[]};
+    return {lv:1,label:T('retARC'),notes:[T('retARCNote'),T('retDual')],links:[]};
   }
   const e=entry(p,o);
-  const notes=['從'+NAME(o)+'出發、持非'+NAME(o)+'護照的旅客，回程通常須持'+NAME(o)+'有效居留證件或簽證。各國規定不同，此工具未收錄，請人工確認。'];
-  if(e.lv!==2) notes.push('若在'+NAME(o)+'沒有居留身分，入境規定為「'+e.label+'」。');
-  return {lv:2,label:'請人工確認居留身分',notes,links:[]};
+  const notes=[T('retOtherNote',NAME(o))];
+  if(e.lv!==2) notes.push(T('retOtherNote2',NAME(o),e.label));
+  return {lv:2,label:T('retOther'),notes,links:[]};
 }
 
-const LV = [{c:'ok',t:'免簽／無需辦理'},{c:'warn',t:'需申請或辦理'},{c:'unk',t:'需人工確認'},{c:'bad',t:'需辦簽證'},{c:'bad',t:'不准入境'}];
+const LVC = ['ok','warn','unk','bad','bad'];
 const ORDER = [4,3,2,1,0]; // 嚴重度排序
-const SEV = lv => ({0:0,1:1,2:2,3:3,4:4})[lv];
-
-function pill(lv,text){ return '<span class="pill p-'+LV[lv].c+'"><span class="dot d-'+LV[lv].c+'"></span>'+esc(text)+'</span>'; }
+function pill(lv,text){ return '<span class="pill p-'+LVC[lv]+'"><span class="dot d-'+LVC[lv]+'"></span>'+esc(text)+'</span>'; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 function render(){
   const sum=document.getElementById('summary'), cards=document.getElementById('cards');
-  const tripBits=[];
-  const O=state.origin[0];
-  tripBits.push('行程 <b>'+(O?NAME(O):'未選出發地')+' → '+(state.dest.map(NAME).join('、')||'未選目的地')+'</b>');
-  tripBits.push('轉機 <b>'+(state.transit.map(NAME).join('、')||'無')+'</b>');
+  const O=state.origin[0], sep=T('sep');
+  const tripBits=[
+    T('route')+' <b>'+esc(O?NAME(O):T('noOrigin'))+' → '+esc(state.dest.map(NAME).join(sep)||T('noDest'))+'</b>',
+    T('transit')+' <b>'+esc(state.transit.map(NAME).join(sep)||T('none'))+'</b>'
+  ];
   if(!O || !state.dest.length || !state.nat.length){
     sum.innerHTML='<div class="trip">'+tripBits.join('　·　')+'</div>'+legend();
-    cards.innerHTML='<div class="empty">'+(!state.nat.length?'先在左邊選這團有哪些護照國籍':!O?'再選出發地':'再選至少一個目的地')+'，結果會顯示在這裡。</div>';
+    cards.innerHTML='<div class="empty">'+(!state.nat.length?T('emptyNat'):!O?T('emptyOrigin'):T('emptyDest'))+T('emptyTail')+'</div>';
     return;
   }
   const items=state.nat.map(p=>{
     const rows=[];
-    state.dest.forEach(d=>rows.push({k:'目的地',n:NAME(d),r:destResult(p,d)}));
-    state.transit.forEach(t=>rows.push({k:'轉機',n:NAME(t),r:transitResult(p,t)}));
-    rows.push({k:'回'+NAME(O),n:'',r:returnResult(p,O)});
+    state.dest.forEach(d=>rows.push({k:T('rowDest'),n:NAME(d),r:destResult(p,d)}));
+    state.transit.forEach(t=>rows.push({k:T('rowTransit'),n:NAME(t),r:transitResult(p,t)}));
+    rows.push({k:T('rowReturn',NAME(O)),n:'',r:returnResult(p,O)});
     const worst=Math.max(...rows.map(x=>x.r.lv));
     return {p,rows,worst};
-  }).sort((a,b)=>SEV(b.worst)-SEV(a.worst));
+  }).sort((a,b)=>b.worst-a.worst);
 
   const allOk=items.filter(i=>i.worst===0).length;
   const counts={}; items.forEach(i=>i.rows.forEach(r=>{counts[r.r.lv]=(counts[r.r.lv]||0)+1;}));
-  const countPills=ORDER.filter(l=>counts[l]).map(l=>pill(l,LV[l].t+' '+counts[l]+' 項')).join('');
+  const LVT=T('lv');
+  const countPills=ORDER.filter(l=>counts[l]).map(l=>pill(l,T('countPill',LVT[l],counts[l]))).join('');
   sum.innerHTML=
-    '<div>'+(isSample?'<span class="example">範例資料</span>':'')+'<b>'+items.length+' 個國籍</b>，其中 '+allOk+' 個全部無需辦理'+(items.length-allOk?'、'+(items.length-allOk)+' 個有項目要處理':'')+'。</div>'+
+    '<div>'+(isSample?'<span class="example">'+T('example')+'</span>':'')+T('summary',items.length,allOk,items.length-allOk)+'</div>'+
     '<div class="trip">'+tripBits.join('　·　')+'</div>'+
     '<div class="counts">'+countPills+'</div>'+legend();
 
   cards.innerHTML=items.map(it=>{
     const levels={}; it.rows.forEach(r=>levels[r.r.lv]=(levels[r.r.lv]||0)+1);
-    const head = it.worst===0 ? pill(0,'全部無需辦理') : ORDER.filter(l=>l>0&&levels[l]).map(l=>pill(l,levels[l]+' 項'+LV[l].t)).join(' ');
+    const head = it.worst===0 ? pill(0,T('allOk')) : ORDER.filter(l=>l>0&&levels[l]).map(l=>pill(l,T('headPill',LVT[l],levels[l]))).join(' ');
     const rows=it.rows.map(x=>{
       const r=x.r;
       const notes=r.notes.map(n=>'<p class="note">'+esc(n)+'</p>').join('');
       const links=r.links.map(l=>'<p class="note"><a href="'+l[1]+'" target="_blank" rel="noopener">'+esc(l[0])+' ↗</a></p>').join('');
-      return '<div class="row"><div class="k">'+x.k+(x.n?'<b>'+esc(x.n)+'</b>':'')+'</div><div class="v">'+pill(r.lv,r.label)+notes+links+'</div></div>';
+      return '<div class="row"><div class="k">'+esc(x.k)+(x.n?'<b>'+esc(x.n)+'</b>':'')+'</div><div class="v">'+pill(r.lv,r.label)+notes+links+'</div></div>';
     }).join('');
-    const foot = it.p==='TW' ? '' : '<div class="card-f">外籍護照建議再以 Timatic 或目的地官方網站確認。</div>';
+    const foot = it.p==='TW' ? '' : '<div class="card-f">'+T('cardFoot')+'</div>';
     return '<article class="card"><div class="card-h"><h3>'+esc(NAME(it.p))+'<code>'+it.p+'</code></h3><div>'+head+'</div></div><div class="rows">'+rows+'</div>'+foot+'</article>';
   }).join('');
 }
 function legend(){
-  return '<div class="legend"><span><i class="dot d-ok"></i>免簽／無需辦理</span><span><i class="dot d-warn"></i>需事先申請、落地辦理或核對證件</span><span><i class="dot d-bad"></i>需辦簽證</span><span><i class="dot d-unk"></i>資料缺漏或特殊規定，請人工確認</span></div>';
+  const g=T('lg');
+  return '<div class="legend"><span><i class="dot d-ok"></i>'+g[0]+'</span><span><i class="dot d-warn"></i>'+g[1]+'</span><span><i class="dot d-bad"></i>'+g[2]+'</span><span><i class="dot d-unk"></i>'+g[3]+'</span></div>';
 }
 
 // ---- 國家選擇器 ----
 const ALL = D.order.slice();
 const POOL = {origin: ()=>ALL, dest: ()=>ALL.filter(c=>c!==state.origin[0]), transit: ()=>ALL.filter(c=>c!==state.origin[0]), nat: ()=>ALL.filter(c=>D.rows[c])};
-const ALIAS = {AE:'阿聯 杜拜 阿布達比 UAE Dubai',GB:'英國 UK 大英',US:'USA',KR:'南韓',NL:'荷蘭',TR:'Turkey',QA:'杜哈 Doha',HK:'Hong Kong',CZ:'捷克共和國'};
+const ALIAS = {AE:'阿聯 杜拜 阿布達比 UAE Dubai Abu Dhabi',GB:'英國 UK 大英 Britain England',US:'USA America',KR:'南韓 Korea',NL:'荷蘭 Holland',TR:'Turkey Istanbul 伊斯坦堡',QA:'杜哈 Doha',HK:'Hong Kong',CZ:'捷克共和國 Czech',TW:'臺灣 ROC',CN:'中國 大陸 China'};
 function matches(c,q){
   q=q.trim().toLowerCase(); if(!q) return true;
   const n=D.names[c]||[c,c];
   const hay=(n[0]+' '+n[1]+' '+c+' '+(ALIAS[c]||'')).toLowerCase();
   return hay.includes(q);
 }
+const pickers=[];
 document.querySelectorAll('.picker').forEach(pk=>{
   const key=pk.dataset.key, input=pk.querySelector('input'), chips=pk.querySelector('.chips');
   const list=document.createElement('ul'); list.className='list'; list.hidden=true; list.id=key+'-list'; list.setAttribute('role','listbox');
   input.setAttribute('aria-controls',list.id); pk.appendChild(list);
   let opts=[], active=0;
   function draw(){
-    chips.innerHTML=state[key].map(c=>'<span class="chip">'+esc(NAME(c))+' <code>'+c+'</code><button type="button" aria-label="移除 '+esc(NAME(c))+'" data-c="'+c+'">×</button></span>').join('');
+    chips.innerHTML=state[key].map(c=>'<span class="chip">'+esc(NAME(c))+' <code>'+c+'</code><button type="button" aria-label="'+esc(T('remove')+NAME(c))+'" data-c="'+c+'">×</button></span>').join('');
   }
-  pk._draw=draw;
+  pickers.push(draw);
+  function other(c){ const n=D.names[c]||[c,c]; return L==='en'? n[0] : n[1]; }
   function open(){
     const q=input.value;
     opts=POOL[key]().filter(c=>!state[key].includes(c)&&matches(c,q));
-    // 精確／開頭符合排前面
     const ql=q.trim().toLowerCase();
     opts.sort((a,b)=>score(b,ql)-score(a,ql));
     opts=opts.slice(0,40); active=0;
-    list.innerHTML = opts.length ? opts.map((c,i)=>'<li role="option" id="'+key+'-o'+i+'" data-c="'+c+'" aria-selected="'+(i===0)+'"><span>'+esc(NAME(c))+'</span><span>'+esc(D.names[c][1])+' · '+c+'</span></li>').join('') : '<li class="none">找不到符合的國家</li>';
+    list.innerHTML = opts.length ? opts.map((c,i)=>'<li role="option" id="'+key+'-o'+i+'" data-c="'+c+'" aria-selected="'+(i===0)+'"><span>'+esc(NAME(c))+'</span><span>'+esc(other(c))+' · '+c+'</span></li>').join('') : '<li class="none">'+T('noMatch')+'</li>';
     list.hidden=false; input.setAttribute('aria-expanded','true');
   }
-  function score(c,q){ if(!q) return 0; const n=D.names[c]; if(n[0]===q||c.toLowerCase()===q) return 3; if(n[0].startsWith(q)||n[1].toLowerCase().startsWith(q)) return 2; return 1; }
+  function score(c,q){ if(!q) return 0; const n=D.names[c]; if(n[0]===q||n[1].toLowerCase()===q||c.toLowerCase()===q) return 3; if(n[0].startsWith(q)||n[1].toLowerCase().startsWith(q)) return 2; return 1; }
   function close(){ list.hidden=true; input.setAttribute('aria-expanded','false'); }
   const single = pk.dataset.max==='1';
   function pick(c){
@@ -375,11 +531,27 @@ document.querySelectorAll('.picker').forEach(pk=>{
   list.addEventListener('mousedown',e=>{const li=e.target.closest('li[data-c]'); if(li){e.preventDefault(); pick(li.dataset.c);}});
   chips.addEventListener('click',e=>{const b=e.target.closest('button[data-c]'); if(b){state[key]=state[key].filter(c=>c!==b.dataset.c); isSample=false; draw(); render();}});
 });
-function drawAll(){ document.querySelectorAll('.picker').forEach(p=>p._draw()); render(); }
+function drawAll(){ pickers.forEach(d=>d()); render(); }
+
+// ---- 語言切換 ----
+function applyLang(){
+  document.documentElement.lang = L==='en' ? 'en' : 'zh-Hant-TW';
+  document.title = T('title');
+  document.querySelectorAll('[data-i]').forEach(el=>{ el.innerHTML=T(el.dataset.i); });
+  document.querySelectorAll('[data-ph]').forEach(el=>{ el.placeholder=T(el.dataset.ph); });
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.lang===L ? 'true':'false'));
+  drawAll();
+}
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>{
+  L=b.dataset.lang; try{ localStorage.setItem('visa-lang',L); }catch(e){}
+  applyLang();
+}));
+
 document.getElementById('form').addEventListener('submit',e=>e.preventDefault());
 document.getElementById('clear').addEventListener('click',()=>{state.dest=[];state.transit=[];state.nat=[];isSample=false;drawAll();});
 document.getElementById('sample').addEventListener('click',()=>{Object.assign(state,JSON.parse(JSON.stringify(SAMPLE)));isSample=true;drawAll();});
-Object.assign(state,JSON.parse(JSON.stringify(SAMPLE))); isSample=true; drawAll();
+Object.assign(state,JSON.parse(JSON.stringify(SAMPLE))); isSample=true;
+applyLang();
 })();
 </script>
 
