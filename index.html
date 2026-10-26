@@ -82,7 +82,8 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
 .d-ok{background:var(--ok)} .d-warn{background:var(--warn)} .d-bad{background:var(--bad)} .d-unk{background:var(--unk)}
-.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:500;white-space:nowrap}
+.pill{display:inline-flex;align-items:flex-start;gap:6px;border-radius:12px;padding:2px 10px;font-size:13px;font-weight:500;line-height:1.5;max-width:100%;overflow-wrap:anywhere}
+.pill .dot{margin-top:.5em}
 .p-ok{background:var(--ok-bg);color:var(--ok)} .p-warn{background:var(--warn-bg);color:var(--warn)}
 .p-bad{background:var(--bad-bg);color:var(--bad)} .p-unk{background:var(--unk-bg);color:var(--unk)}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px}
@@ -273,8 +274,8 @@ en:{
   clear:'Clear all', sample:'Load example',
   foot1:()=>'<b>Source:</b> Visa data from Passport Index public data ('+DATA_DATE+' edition, compiled on GitHub at <a href="https://github.com/imorte/passport-index-data" target="_blank" rel="noopener">imorte/passport-index-data</a>, MIT licence). Rule changes after this date are not reflected.',
   foot2:'<b>Returning to Taiwan:</b> Under Article 20 of the Regulations Governing Visiting, Residency, and Permanent Residency of Foreign Nationals, foreign residents who leave Taiwan need a re-entry permit to return (usually issued together with the Alien Resident Certificate). APRC holders can re-enter with the APRC and a valid passport.',
-  foot3:()=>'<b>Fees:</b> Fees for electronic travel authorisations (ETA, ESTA, etc.) were checked against official government websites on '+FEE_CHECKED+'. Items marked “please verify manually” could not be confirmed. Visa fees: please verify manually. All application links go to official government websites; do not use agents or look-alike sites.',
-  foot4:'This tool is a first-pass screen only. For items marked yellow, red or grey, confirm with the destination’s official notices, the airline’s Timatic, or Taiwan’s Bureau of Consular Affairs.',
+  foot3:()=>'<b>Fees:</b> Fees for electronic travel authorisations (ETA, ESTA, etc.) were checked against official government websites on '+FEE_CHECKED+'. Items marked "please verify manually" could not be confirmed. Visa fees: please verify manually. All application links go to official government websites; do not use agents or look-alike sites.',
+  foot4:'This tool is a first-pass screen only. For items marked yellow, red or grey, confirm with the destination\'s official notices, the airline\'s Timatic, or Taiwan\'s Bureau of Consular Affairs.',
   citizen:'Citizen',
   twCN:'Taiwan residents enter mainland China with a Mainland Travel Permit for Taiwan Residents, not a passport.',
   twHK:'Taiwan residents visiting Hong Kong follow special rules such as online pre-arrival registration or the Mainland Travel Permit.',
@@ -291,7 +292,7 @@ en:{
   krLabel:l=>l+' – verify K-ETA manually',
   krNote:'If this nationality is not on the K-ETA temporary exemption list, a K-ETA is required. The exemption officially runs until 2026/12/31; for travel in 2027, check again.',
   transitRule:'Assumes airside transit on one ticket, without passing immigration or changing airports.',
-  ifExit:l=>'If you need to pass immigration, stay overnight, change airports or travel on separate tickets, the entry rule applies: “'+l+'”.',
+  ifExit:l=>'If you need to pass immigration, stay overnight, change airports or travel on separate tickets, the entry rule applies: "'+l+'".',
   canEnterFree:'Visa-free entry',
   noAirsideFree:n=>n+' has no international transit area; transit passengers must enter the country.',
   mustEnter:l=>'Must enter even in transit: '+l,
@@ -315,7 +316,7 @@ en:{
   retDual:'Travellers who also hold ROC (Taiwan) nationality should leave and enter Taiwan on their Taiwan passport.',
   retOther:'Verify residence status manually',
   retOtherNote:o=>'Travellers departing from '+o+' on a non-'+o+' passport usually need a valid '+o+' residence permit or visa to return. Rules vary and are not covered by this tool; verify manually.',
-  retOtherNote2:(o,l)=>'If the traveller has no residence status in '+o+', the entry rule is: “'+l+'”.',
+  retOtherNote2:(o,l)=>'If the traveller has no residence status in '+o+', the entry rule is: "'+l+'".',
   lv:['Visa-free / nothing needed','Apply or arrange','Verify manually','Visa required','Entry not permitted'],
   route:'Route', noOrigin:'No departure', noDest:'No destination', transit:'Transit', none:'None', sep:', ',
   emptyNat:'Start by choosing the passport nationalities on the left', emptyOrigin:'Next, choose the departure country', emptyDest:'Next, choose at least one destination', emptyTail:'. Results will appear here.',
@@ -323,7 +324,7 @@ en:{
   example:'Example',
   countPill:(t,n)=>t+': '+n, headPill:(t,n)=>t+' ('+n+')', allOk:'Nothing needed',
   rowDest:'Destination', rowTransit:'Transit', rowReturn:o=>'Return to '+o,
-  cardFoot:'For non-Taiwan passports, also confirm with Timatic or the destination’s official website.',
+  cardFoot:'For non-Taiwan passports, also confirm with Timatic or the destination\'s official website.',
   lg:['Visa-free or nothing needed','Apply in advance, on arrival, or check documents','Visa required','Missing data or special rules – verify manually'],
   noMatch:'No matching country', remove:'Remove ',
   links:{GB:'UK ETA (official)',US:'US ESTA (official)',CA:'Canada eTA (official)',NZ:'New Zealand NZeTA (official)',AU:'Australia visa finder (official)',KR:'Korea K-ETA (official)'}
@@ -486,7 +487,7 @@ function legend(){
 // ---- 國家選擇器 ----
 const ALL = D.order.slice();
 const POOL = {origin: ()=>ALL, dest: ()=>ALL.filter(c=>c!==state.origin[0]), transit: ()=>ALL.filter(c=>c!==state.origin[0]), nat: ()=>ALL.filter(c=>D.rows[c])};
-const ALIAS = {AE:'阿聯 杜拜 阿布達比 UAE Dubai Abu Dhabi',GB:'英國 UK 大英 Britain England',US:'USA America',KR:'南韓 Korea',NL:'荷蘭 Holland',TR:'Turkey Istanbul 伊斯坦堡',QA:'杜哈 Doha',HK:'Hong Kong',CZ:'捷克共和國 Czech',TW:'臺灣 ROC',CN:'中國 大陸 China'};
+const ALIAS = {AE:'阿聯 杜拜 阿布達比 UAE Dubai Abu Dhabi',GB:'英國 UK 大英 Britain England',US:'USA America',KR:'南韓 korea 韓國',NL:'荷蘭 Holland',TR:'Turkey Istanbul 伊斯坦堡',QA:'杜哈 Doha',HK:'Hong Kong',CZ:'捷克共和國 Czech',TW:'臺灣 ROC',CN:'中國 大陸 China'};
 function matches(c,q){
   q=q.trim().toLowerCase(); if(!q) return true;
   const n=D.names[c]||[c,c];
@@ -513,7 +514,7 @@ document.querySelectorAll('.picker').forEach(pk=>{
     list.innerHTML = opts.length ? opts.map((c,i)=>'<li role="option" id="'+key+'-o'+i+'" data-c="'+c+'" aria-selected="'+(i===0)+'"><span>'+esc(NAME(c))+'</span><span>'+esc(other(c))+' · '+c+'</span></li>').join('') : '<li class="none">'+T('noMatch')+'</li>';
     list.hidden=false; input.setAttribute('aria-expanded','true');
   }
-  function score(c,q){ if(!q) return 0; const n=D.names[c]; if(n[0]===q||n[1].toLowerCase()===q||c.toLowerCase()===q) return 3; if(n[0].startsWith(q)||n[1].toLowerCase().startsWith(q)) return 2; return 1; }
+  function score(c,q){ if(!q) return 0; const n=D.names[c]; const al=(ALIAS[c]||'').toLowerCase().split(' '); if(n[0]===q||n[1].toLowerCase()===q||c.toLowerCase()===q||al.includes(q)) return 3; if(n[0].startsWith(q)||n[1].toLowerCase().startsWith(q)) return 2; return 1; }
   function close(){ list.hidden=true; input.setAttribute('aria-expanded','false'); }
   const single = pk.dataset.max==='1';
   function pick(c){
